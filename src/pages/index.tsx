@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
-import Prismic from '@prismicio/client';
+
 import { ptBR } from 'date-fns/locale';
 import { format, parseISO } from 'date-fns';
 
-import { Document } from '@prismicio/client/types/documents';
-
 import { FiCalendar, FiUser } from 'react-icons/fi';
 
+import Prismic from '@prismicio/client';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -33,25 +33,6 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-function getFormattedPost(post: Document): Post {
-  const formattedPost = {
-    uid: post.uid,
-    first_publication_date: format(
-      parseISO(post.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
-    data: {
-      title: post.data.title,
-      subtitle: post.data.subtitle,
-      author: post.data.author,
-    },
-  };
-  return formattedPost;
-}
-
 export default function Home({
   postsPagination: { results, next_page },
 }: HomeProps): React.ReactElement {
@@ -64,7 +45,15 @@ export default function Home({
       .then(data => {
         setNextPage(data.next_page);
         const formattedNewPosts = data.results.map(post => {
-          return getFormattedPost(post);
+          return {
+            uid: post.uid,
+            first_publication_date: post.first_publication_date,
+            data: {
+              title: post.data.title,
+              subtitle: post.data.subtitle,
+              author: post.data.author,
+            },
+          };
         });
         setPosts([...posts, ...formattedNewPosts]);
       });
@@ -77,20 +66,28 @@ export default function Home({
       <main className={commonStyles.container}>
         <div className={styles.posts}>
           {posts.map(post => (
-            <a key={post.uid} href="#">
-              <strong>{post.data.title}</strong>
-              <p>{post.data.subtitle}</p>
-              <div>
-                <time>
-                  <FiCalendar />
-                  {post.first_publication_date}
-                </time>
-                <span>
-                  <FiUser />
-                  {post.data.author}
-                </span>
-              </div>
-            </a>
+            <Link key={post.uid} href={`/post/${post.uid}`}>
+              <a>
+                <strong>{post.data.title}</strong>
+                <p>{post.data.subtitle}</p>
+                <div>
+                  <time>
+                    <FiCalendar />
+                    {format(
+                      parseISO(post.first_publication_date),
+                      'dd MMM yyyy',
+                      {
+                        locale: ptBR,
+                      }
+                    )}
+                  </time>
+                  <span>
+                    <FiUser />
+                    {post.data.author}
+                  </span>
+                </div>
+              </a>
+            </Link>
           ))}
 
           {nextPage && (
@@ -110,14 +107,22 @@ export const getStaticProps: GetStaticProps = async () => {
     [Prismic.predicates.at('document.type', 'post')],
     {
       fetch: ['post.title', 'post.subtitle', 'post.author'],
-      pageSize: 1,
+      pageSize: 2,
     }
   );
 
   const { next_page } = postsResponse;
 
   const results = postsResponse.results.map(post => {
-    return getFormattedPost(post);
+    return {
+      uid: post.uid,
+      first_publication_date: post.first_publication_date,
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    };
   });
 
   const postsPagination = { next_page, results };
