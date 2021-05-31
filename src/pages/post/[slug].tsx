@@ -12,6 +12,8 @@ import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 import { getPrismicClient } from '../../services/prismic';
 
+import { Comments } from '../../components/Comments';
+
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 
@@ -99,6 +101,8 @@ export default function Post({ post }: PostProps): React.ReactElement {
             </section>
           ))}
         </article>
+
+        <Comments />
       </main>
     </>
   );

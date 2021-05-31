@@ -13,6 +13,7 @@
 - [x] Listagem de posts.
 - [x] Visualização do post completo
 - [x] Integração com o [Prismic CMS](https://prismic.io)
+- [x] Comentários do post com [Utteranc](https://utteranc.es/)
 
 - Demo
   ![](demo.gif)
